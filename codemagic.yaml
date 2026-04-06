@@ -1,0 +1,18 @@
+workflows:
+  build-macos:
+    name: Build macOS App
+    max_build_duration: 60
+    environment:
+      flutter: stable
+      xcode: latest
+    scripts:
+      # 1. 开启macOS桌面支持
+      - flutter config --enable-macos-desktop
+      # 2. 给项目添加macOS桌面工程文件（解决项目无macOS支持导致的白屏）
+      - flutter create . --platforms=macos
+      # 3. 获取
+      - flutter pub get
+
+      - flutter build macos --release
+    artifacts:
+      - build/macos/Build/Products/Release/*.app
