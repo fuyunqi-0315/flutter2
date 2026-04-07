@@ -1,25 +1,23 @@
 workflows:
   build-macos:
     name: Build macOS App
-    max_build_duration: 60
+    max_build_duration: 30
+    instance_type: mac_mini_m2
     environment:
       flutter: stable
       xcode: latest
+      cocoapods: default
     scripts:
-      # 1. 开启macOS桌面支持
-      - flutter config --enable-macos-desktop
-      # 2. 确保项目包含macOS工程文件
-      - flutter create . --platforms=macos
-      # 3. 获取依赖
-      - flutter pub get
-      # 4. 编译 Release 版本
-      - flutter build macos --release
-
-      # --- 关键步骤：打包成 DMG ---
-      # 我们将生成的文件明确命名为 "FlutterApp.dmg"
-      - echo "📦 正在打包 DMG..."
-      - hdiutil create -volname "FlutterApp" -srcfolder build/macos/Build/Products/Release/*.app -ov -format UDZO FlutterApp.dmg
-
+      - name: Clean project
+        script: flutter clean
+      - name: Get dependencies
+        script: flutter pub get
+      - name: Build macOS release
+        script: flutter build macos --release --no-tree-shake-icons
     artifacts:
-      # 这里必须写和上面完全一样的文件名
-      - FlutterApp.dmg
+      - build/macos/Build/Products/Release/*.zip
+      - build/macos/Build/Products/Release/*.app
+    publishing:
+      email:
+        recipients:
+          - mc_fuyunqi@foxmail.com
