@@ -7,7 +7,7 @@ workflows:
       flutter: stable
       xcode: latest
     scripts:
-      # 启用所有平台
+      # 启用平台支持（仅需执行一次，保留不影响）
       - flutter config --enable-macos-desktop
       - flutter config --enable-windows-desktop
 
@@ -15,18 +15,20 @@ workflows:
       - flutter pub get
 
       # --------------------------
-      # 构建 macOS（.app + .dmg）
+      # 构建 macOS（自动匹配APP名，不再写死）
       # --------------------------
       - flutter build macos --release
-      - hdiutil create -volname "MyApp" -srcfolder "build/macos/Build/Products/Release/MyApp.app" -ov -format UDZO ./MyApp-Mac.dmg
+      # 用通配符自动匹配生成的.app，解决名字不匹配问题
+      - hdiutil create -volname "MyApp" -srcfolder build/macos/Build/Products/Release/*.app -ov -format UDZO ./MyApp-Mac.dmg
 
       # --------------------------
-      # 构建 Windows（.zip）
+      # 构建 Windows（修复路径通配符问题）
       # --------------------------
       - flutter build windows --release
-      - zip -r ./MyApp-Windows.zip build/windows/x64/runner/Release/*
+      # 修复zip路径，用通配符匹配整个Release文件夹
+      - zip -r ./MyApp-Windows.zip build/windows/x64/runner/Release/
 
     artifacts:
-      # 构建完成后可下载这两个文件
+      # 输出两个安装包
       - ./MyApp-Mac.dmg
       - ./MyApp-Windows.zip
