@@ -1,25 +1,26 @@
 workflows:
-  build-macos:
-    name: Build macOS App
+  default-workflow:
+    name: Default Workflow
     max_build_duration: 60
+    instance_type: mac_mini_m2
     environment:
       flutter: stable
       xcode: latest
+      cocoapods: default
     scripts:
-      # 1. 开启macOS桌面支持
-      - flutter config --enable-macos-desktop
-      # 2. 确保项目包含macOS工程文件
-      - flutter create . --platforms=macos
-      # 3. 获取依赖
-      - flutter pub get
-      # 4. 编译 Release 版本
-      - flutter build macos --release
-
-      # --- 下面这几行是关键：把 .app 打包成 .dmg 安装包 ---
-      - echo "📦 正在将 App 打包成 DMG 镜像..."
-      # 创建一个名为 MyFlutterApp 的磁盘镜像，包含编译好的 App
-      - hdiutil create -volname "MyFlutterApp" -srcfolder build/macos/Build/Products/Release/*.app -ov -format UDZO MyFlutterApp.dmg
-
+      - name: Get Flutter dependencies
+        script: |
+          flutter pub get
+      - name: Build macOS release app
+        script: |
+          flutter build macos --release --no-tree-shake-icons
     artifacts:
-      # 告诉 Codemagic 保存生成的 dmg 文件
-      - MyFlutterApp.dmg
+      - build/macos/Build/Products/Release/*.app
+      - build/macos/Build/Products/Release/*.zip
+    publishing:
+      email:
+        recipients:
+          - mc_fuyunqi@foxmail.com
+        notify:
+          success: true
+          failure: true
