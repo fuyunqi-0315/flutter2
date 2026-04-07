@@ -1,5 +1,5 @@
 workflows:
-  # 工作流1：在 macOS 机器上构建 macOS 安装包
+  # 工作流1：仅构建 macOS 安装包（你核心需求，优先保证）
   build-macos:
     name: Build macOS App
     instance_type: mac_mini_m2
@@ -14,19 +14,3 @@ workflows:
       - hdiutil create -volname "MyApp" -srcfolder build/macos/Build/Products/Release/*.app -ov -format UDZO ./MyApp-Mac.dmg
     artifacts:
       - ./MyApp-Mac.dmg
-
-  # 工作流2：在 Windows 机器上构建 Windows 安装包
-  build-windows:
-    name: Build Windows App
-    instance_type: standard
-    max_build_duration: 60
-    environment:
-      flutter: stable
-      os: windows
-    scripts:
-      - flutter config --enable-windows-desktop
-      - flutter pub get
-      - flutter build windows --release
-      - powershell Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath ./MyApp-Windows.zip
-    artifacts:
-      - ./MyApp-Windows.zip
