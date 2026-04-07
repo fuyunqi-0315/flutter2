@@ -1,25 +1,32 @@
 workflows:
-  build-macos:
-    name: Build macOS App
+  build-macos-windows:
+    name: Build macOS + Windows App
+    instance_type: mac_mini_m2
     max_build_duration: 60
     environment:
       flutter: stable
       xcode: latest
     scripts:
-      # 1. 开启macOS桌面支持
+      # 启用所有平台
       - flutter config --enable-macos-desktop
-      # 2. 确保项目包含macOS工程文件
-      - flutter create . --platforms=macos
-      # 3. 获取依赖
-      - flutter pub get
-      # 4. 编译 Release 版本
-      - flutter build macos --release
+      - flutter config --enable-windows-desktop
 
-      # --- 关键步骤：打包成 DMG ---
-      # 这里我们将安装包生成在根目录，并明确命名为 "MyMacApp.dmg"
-      - echo "📦 正在打包 DMG 安装包..."
-      - hdiutil create -volname "MyMacApp" -srcfolder build/macos/Build/Products/Release/*.app -ov -format UDZO ./MyMacApp.dmg
+      # 安装依赖
+      - flutter pub get
+
+      # --------------------------
+      # 构建 macOS（.app + .dmg）
+      # --------------------------
+      - flutter build macos --release
+      - hdiutil create -volname "MyApp" -srcfolder "build/macos/Build/Products/Release/MyApp.app" -ov -format UDZO ./MyApp-Mac.dmg
+
+      # --------------------------
+      # 构建 Windows（.zip）
+      # --------------------------
+      - flutter build windows --release
+      - zip -r ./MyApp-Windows.zip build/windows/x64/runner/Release/*
 
     artifacts:
-      # 这里必须写和上面完全一样的文件名，前面加上 ./ 表示根目录
-      - ./MyMacApp.dmg
+      # 构建完成后可下载这两个文件
+      - ./MyApp-Mac.dmg
+      - ./MyApp-Windows.zip
