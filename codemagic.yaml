@@ -1,12 +1,14 @@
 workflows:
   build-ios:
-    name: Build iOS
+    name: Build iOS for 爱思助手签名
     instance_type: mac_mini
     environment:
       flutter: stable
       xcode: latest
     scripts:
-      - flutter pub get
-      - flutter build ios --release
+      - name: 安装依赖
+        script: flutter pub get
+      - name: 构建标准iOS包（自动生成可签名IPA）
+        script: flutter build ios --release
     artifacts:
       - build/ios/ipa/*.ipa
