@@ -1,34 +1,33 @@
 workflows:
-  build-macos-windows:
-    name: Build macOS + Windows App
+  # 工作流1：在 macOS 机器上构建 macOS 安装包
+  build-macos:
+    name: Build macOS App
     instance_type: mac_mini_m2
     max_build_duration: 60
     environment:
       flutter: stable
       xcode: latest
     scripts:
-      # 启用平台支持（仅需执行一次，保留不影响）
       - flutter config --enable-macos-desktop
-      - flutter config --enable-windows-desktop
-
-      # 安装依赖
       - flutter pub get
-
-      # --------------------------
-      # 构建 macOS（自动匹配APP名，不再写死）
-      # --------------------------
       - flutter build macos --release
-      # 用通配符自动匹配生成的.app，解决名字不匹配问题
+      # 自动匹配.app打包DMG
       - hdiutil create -volname "MyApp" -srcfolder build/macos/Build/Products/Release/*.app -ov -format UDZO ./MyApp-Mac.dmg
-
-      # --------------------------
-      # 构建 Windows（修复路径通配符问题）
-      # --------------------------
-      - flutter build windows --release
-      # 修复zip路径，用通配符匹配整个Release文件夹
-      - zip -r ./MyApp-Windows.zip build/windows/x64/runner/Release/
-
     artifacts:
-      # 输出两个安装包
       - ./MyApp-Mac.dmg
+
+  # 工作流2：在 Windows 机器上构建 Windows 安装包
+  build-windows:
+    name: Build Windows App
+    instance_type: windows
+    max_build_duration: 60
+    environment:
+      flutter: stable
+    scripts:
+      - flutter config --enable-windows-desktop
+      - flutter pub get
+      - flutter build windows --release
+      # 打包成zip
+      - powershell Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath ./MyApp-Windows.zip
+    artifacts:
       - ./MyApp-Windows.zip
