@@ -1,14 +1,30 @@
 workflows:
-  build-ios:
-    name: Build iOS for 爱思助手签名
-    instance_type: mac_mini
+  ios-release:
+    name: iOS Release (IPA for AiSi)
+    instance_type: mac_mini_m2
     environment:
-      flutter: stable
+      # 使用最新的稳定版 Xcode 和 Flutter
       xcode: latest
+      flutter: stable
+      # 关键设置：指定构建模式为 Release
+      vars:
+        XCODE_WORKSPACE: "Runner.xcworkspace"
+        XCODE_SCHEME: "Runner"
+
     scripts:
-      - name: 安装依赖
-        script: flutter pub get
-      - name: 构建标准iOS包（自动生成可签名IPA）
-        script: flutter build ios --release
+      # 1. 获取依赖
+      - flutter pub get
+
+      # 2. 构建 IPA (关键步骤)
+      # --no-codesign 表示不进行苹果官方签名（因为我们要用爱思助手签名）
+      # --release 表示发布模式
+      - flutter build ipa --release --no-codesign
+
     artifacts:
+      # 3. 指定要保存的文件（这里会抓取生成的 ipa）
       - build/ios/ipa/*.ipa
+
+    publishing:
+      # 4. 构建成功后，自动把 ipa 重命名，方便你下载
+      scripts:
+        - mv build/ios/ipa/*.ipa build/ios/ipa/app-release.ipa
