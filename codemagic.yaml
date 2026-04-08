@@ -18,6 +18,11 @@ workflows:
         script: flutter build ipa --release --no-codesign
 
     artifacts:
-      # 关键：这里使用通配符，不管生成什么名字的文件，只要在这个目录下都抓取
-      - build/ios/ipa/**/*.ipa
-      - build/ios/ipa/**/*.app
+      # 关键修改：使用绝对路径进行全盘搜索
+      # 这行代码会搜索整个系统构建目录下的所有 ipa 和 app 文件
+      - /Users/builder/build/**/*.ipa
+      - /Users/builder/build/**/*.app
+      
+      # 保留相对路径搜索作为保险
+      - build/**/*.ipa
+      - build/**/*.app
